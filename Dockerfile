@@ -39,7 +39,8 @@ RUN adduser -S -u 1001 -G nodejs nextjs || true
 COPY --from=builder /app/public ./public
 
 # Set the correct permission for prerender cache
-RUN mkdir .next && chown nextjs:nodejs .next
+# Use -p to avoid "File exists" error
+RUN mkdir -p .next && chown nextjs:nodejs .next
 
 # Automatically leverage output traces to reduce image size
 # https://nextjs.org/docs/advanced-features/output-file-tracing
