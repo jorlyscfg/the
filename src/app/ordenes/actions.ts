@@ -307,8 +307,8 @@ export async function crearOrden(data: NuevaOrdenData) {
       }
     }
 
-    const empleado_recibe_id = empleadoId;
-    const sucursal_id = sucursalId;
+    let empleado_recibe_id = empleadoId;
+    let sucursal_id = sucursalId;
 
     // Si no se encontró sucursal del empleado, buscar la primera disponible
     if (!sucursal_id) {
