@@ -27,12 +27,15 @@ export async function updateSession(request: NextRequest) {
                                 headers: request.headers,
                             },
                         })
-                        // Explicitly set maxAge for persistence
+                        // Explicitly set attributes for persistence and Safari compatibility
                         response.cookies.set({
                             name,
                             value,
                             ...options,
                             maxAge: MAX_AGE,
+                            sameSite: 'lax',
+                            secure: process.env.NODE_ENV === 'production',
+                            path: '/',
                         })
                     })
                 },

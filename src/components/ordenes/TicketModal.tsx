@@ -168,20 +168,23 @@ export default function TicketModal({ orden, isOpen, onClose }: TicketModalProps
 
             // Verificar si el navegador soporta Web Share API para archivos
             if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                // 1. Copiar texto al portapapeles
-                try {
-                    await navigator.clipboard.writeText(shareText);
-                    showSuccess('Texto copiado', 'Pégalo en el mensaje al compartir la imagen');
-                } catch (clipboardError) {
-                    console.error('Error al copiar al portapapeles:', clipboardError);
-                }
+                // En iOS/Safari, navigator.share DEBE ser lo primero tras el click
+                // para evitar que se pierda el "User Gesture" por el await del clipboard.
 
-                // 2. Compartir solo la imagen
+                // 1. Compartir la imagen (Prioridad #1 en iOS)
                 try {
                     await navigator.share({
                         files: [file],
                         title: `Ticket Orden #${orden.numero_orden}`,
                     });
+
+                    // 2. Después de compartir (o si se cancela), intentamos copiar el texto como apoyo
+                    try {
+                        await navigator.clipboard.writeText(shareText);
+                        showSuccess('Texto copiado', 'Puedes pegarlo si el autocompletado de WhatsApp no lo hizo');
+                    } catch (clipboardError) {
+                        console.log('Clipboard fallback silenciado');
+                    }
                 } catch (e) {
                     console.log('Share de imagen cancelado o fallido', e);
                 }
