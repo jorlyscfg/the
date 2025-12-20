@@ -168,33 +168,31 @@ export async function obtenerUserInfo() {
   }
 }
 
-/**
- * Función consolidada para inicializar el dashboard en una sola llamada (o ejecución de servidor)
- * Combina información del usuario y estadísticas del dashboard.
- */
-const userResult = await obtenerUserInfo();
+export async function obtenerDatosInicialesDashboard() {
+  try {
+    const userResult = await obtenerUserInfo();
 
-if (!userResult.success) {
-  return { success: false, error: userResult.error };
-}
+    if (!userResult.success) {
+      return { success: false, error: userResult.error };
+    }
 
-const dashboardResult = await obtenerDatosCompletosDashboard(userResult);
+    const dashboardResult = await obtenerDatosCompletosDashboard(userResult);
 
-return {
-  success: true,
-  user: userResult.user,
-  dashboard: dashboardResult.success ? {
-    stats: dashboardResult.stats,
-    estadisticasMensuales: dashboardResult.estadisticasMensuales,
-    estadisticasEstados: dashboardResult.estadisticasEstados,
-  } : null,
-  error: dashboardResult.error
-};
+    return {
+      success: true,
+      user: userResult.user,
+      dashboard: dashboardResult.success ? {
+        stats: dashboardResult.stats,
+        estadisticasMensuales: dashboardResult.estadisticasMensuales,
+        estadisticasEstados: dashboardResult.estadisticasEstados,
+      } : null,
+      error: dashboardResult.error
+    };
   } catch (error) {
-  console.error('Error en obtenerDatosInicialesDashboard:', error);
-  return {
-    success: false,
-    error: error instanceof Error ? error.message : 'Error desconocido',
-  };
-}
+    console.error('Error en obtenerDatosInicialesDashboard:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Error desconocido',
+    };
+  }
 }
