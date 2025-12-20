@@ -56,7 +56,7 @@ async function createAdminUser() {
     }
 
     const { data: existingUsers } = await supabase.auth.admin.listUsers();
-    const userExists = existingUsers?.users.find(u => u.email === empresa.email);
+    const userExists = existingUsers?.users.find((u: any) => u.email === empresa.email);
 
     if (userExists) {
       console.log('\n✓ Ya existe un usuario con este email');
