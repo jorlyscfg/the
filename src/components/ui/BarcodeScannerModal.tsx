@@ -79,7 +79,7 @@ export default function BarcodeScannerModal({
         console.log('Starting decode with device:', deviceIdToUse || 'default');
 
         codeReader.current.decodeFromVideoDevice(
-            deviceIdToUse,
+            deviceIdToUse || null, // Fix: Ensure it's string or null, not undefined
             videoRef.current,
             (result, err) => {
                 if (result) {
