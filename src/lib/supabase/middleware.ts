@@ -8,9 +8,6 @@ export async function updateSession(request: NextRequest) {
         },
     })
 
-    // 30 days in seconds
-    const MAX_AGE = 30 * 24 * 60 * 60
-
     const supabase = createServerClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -22,17 +19,17 @@ export async function updateSession(request: NextRequest) {
                 setAll(cookiesToSet: Array<{ name: string; value: string; options: CookieOptions }>) {
                     cookiesToSet.forEach(({ name, value, options }) => {
                         request.cookies.set(name, value)
-                        response = NextResponse.next({
-                            request: {
-                                headers: request.headers,
-                            },
-                        })
-                        // Explicitly set attributes for persistence and Safari compatibility
+                    })
+                    response = NextResponse.next({
+                        request: {
+                            headers: request.headers,
+                        },
+                    })
+                    cookiesToSet.forEach(({ name, value, options }) => {
                         response.cookies.set({
                             name,
                             value,
                             ...options,
-                            maxAge: MAX_AGE,
                             sameSite: 'lax',
                             secure: process.env.NODE_ENV === 'production',
                             path: '/',
@@ -43,7 +40,7 @@ export async function updateSession(request: NextRequest) {
         }
     )
 
-    // This will refresh the session if needed - customizes the response
+    // This will refresh the session if needed
     await supabase.auth.getUser()
 
     return response

@@ -11,8 +11,6 @@ export default async function HomePage() {
   const result = await obtenerDatosInicialesDashboard();
 
   if (!result.success) {
-    // Si no está autenticado o hay un error de sesión, el middleware debería haberlo atrapado,
-    // pero por seguridad redirigimos a login.
     redirect('/login');
   }
 

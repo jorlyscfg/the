@@ -36,10 +36,11 @@ const nombresMeses = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 's
 /**
  * Obtiene todos los datos del dashboard en una sola llamada optimizada (RPC)
  */
-export async function obtenerDatosCompletosDashboard() {
+export async function obtenerDatosCompletosDashboard(prefetchedUserInfo?: any) {
   try {
-    const userInfo = await obtenerUserInfo();
+    const userInfo = prefetchedUserInfo || await obtenerUserInfo();
     if (!userInfo.success || !userInfo.user?.empresa?.id) {
+      if (prefetchedUserInfo) return { success: false, error: 'No se pudo identificar la empresa' };
       throw new Error('No se pudo identificar la empresa del usuario');
     }
 
@@ -128,7 +129,8 @@ export async function obtenerUserInfo() {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      throw new Error('Usuario no autenticado');
+      // Retornar error silencioso sin loguear en consola de servidor
+      return { success: false, error: 'No autenticado' };
     }
 
     const { data: empleado, error: empleadoError } = await supabase
@@ -157,7 +159,8 @@ export async function obtenerUserInfo() {
       },
     };
   } catch (error) {
-    console.error('Error en obtenerUserInfo:', error);
+    // Solo loguear errores que NO sean de falta de sesión
+    console.error('Error técnico en obtenerUserInfo:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Error desconocido',
@@ -169,33 +172,29 @@ export async function obtenerUserInfo() {
  * Función consolidada para inicializar el dashboard en una sola llamada (o ejecución de servidor)
  * Combina información del usuario y estadísticas del dashboard.
  */
-export async function obtenerDatosInicialesDashboard() {
-  try {
-    // Estas llamadas en el servidor NO generan peticiones POST adicionales si se llaman desde un Server Component
-    const [userResult, dashboardResult] = await Promise.all([
-      obtenerUserInfo(),
-      obtenerDatosCompletosDashboard()
-    ]);
+const userResult = await obtenerUserInfo();
 
-    if (!userResult.success) {
-      return { success: false, error: userResult.error };
-    }
+if (!userResult.success) {
+  return { success: false, error: userResult.error };
+}
 
-    return {
-      success: true,
-      user: userResult.user,
-      dashboard: dashboardResult.success ? {
-        stats: dashboardResult.stats,
-        estadisticasMensuales: dashboardResult.estadisticasMensuales,
-        estadisticasEstados: dashboardResult.estadisticasEstados,
-      } : null,
-      error: dashboardResult.error
-    };
+const dashboardResult = await obtenerDatosCompletosDashboard(userResult);
+
+return {
+  success: true,
+  user: userResult.user,
+  dashboard: dashboardResult.success ? {
+    stats: dashboardResult.stats,
+    estadisticasMensuales: dashboardResult.estadisticasMensuales,
+    estadisticasEstados: dashboardResult.estadisticasEstados,
+  } : null,
+  error: dashboardResult.error
+};
   } catch (error) {
-    console.error('Error en obtenerDatosInicialesDashboard:', error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Error desconocido',
-    };
-  }
+  console.error('Error en obtenerDatosInicialesDashboard:', error);
+  return {
+    success: false,
+    error: error instanceof Error ? error.message : 'Error desconocido',
+  };
+}
 }
