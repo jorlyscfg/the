@@ -10,9 +10,10 @@ const nextConfig = {
       },
     ],
   },
+  output: 'standalone',
   experimental: {
     serverActions: {
-      allowedOrigins: ['localhost:3004', '*.trycloudflare.com'],
+      allowedOrigins: ['localhost:3003', 'localhost:3004', '*.trycloudflare.com'],
     },
   },
 }

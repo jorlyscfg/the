@@ -3,6 +3,8 @@ import DashboardUI from '@/components/dashboard/DashboardUI';
 import { obtenerDatosInicialesDashboard } from './actions';
 import { redirect } from 'next/navigation';
 
+export const dynamic = 'force-dynamic';
+
 export default async function HomePage() {
   // Esta llamada ocurre en el servidor ANTES de enviar el HTML al navegador.
   // No genera peticiones POST visibles en el cliente.
