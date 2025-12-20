@@ -50,8 +50,7 @@ export async function obtenerDatosCompletosDashboard(prefetchedUserInfo?: any) {
 
     // Llamada única a la función RPC con filtrado por empresa
     const { data, error } = await supabase.rpc('get_dashboard_data', {
-      p_anio: anioActual,
-      p_empresa_id: empresaId
+      p_anio: anioActual
     });
 
     if (error) throw error;
