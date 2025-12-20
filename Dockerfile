@@ -6,21 +6,22 @@ RUN npm install -g npm@latest
 # Install dependencies only when needed
 FROM base AS deps
 WORKDIR /app
-ENV NODE_ENV=development
 
 # Install dependencies based on the preferred package manager
 COPY package.json package-lock.json* ./
-RUN npm install
+RUN npm ci
 
 # Rebuild the source code only when needed
 FROM base AS builder
 WORKDIR /app
-ENV NODE_ENV=development
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 # Disable telemetry during build.
 ENV NEXT_TELEMETRY_DISABLED=1
+
+# Ensure NODE_ENV is production for the build step
+ENV NODE_ENV=production
 
 RUN npm run build
 
