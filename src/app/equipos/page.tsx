@@ -57,7 +57,6 @@ export default function EquiposPage() {
         const { data, error } = await supabase
           .from('tipos_equipos')
           .select('*')
-          .eq('empresa_id', empresaId)
           .order('veces_usado', { ascending: false });
 
         if (error) throw error;
@@ -69,7 +68,6 @@ export default function EquiposPage() {
             *,
             tipos_equipos (nombre)
           `)
-          .eq('empresa_id', empresaId)
           .order('veces_usado', { ascending: false });
 
         if (error) throw error;
