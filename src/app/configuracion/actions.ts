@@ -46,38 +46,40 @@ export interface Empleado {
   };
 }
 
-const userInfo = await obtenerUserInfo();
-if (!userInfo.success || !userInfo.user?.empresa?.id) {
-  throw new Error('No se pudo identificar la empresa del usuario');
-}
-const empresaId = userInfo.user.empresa.id;
-const supabase = await createClient();
+export async function obtenerConfiguracionCompleta() {
+  try {
+    const userInfo = await obtenerUserInfo();
+    if (!userInfo.success || !userInfo.user?.empresa?.id) {
+      throw new Error('No se pudo identificar la empresa del usuario');
+    }
+    const empresaId = userInfo.user.empresa.id;
+    const supabase = await createClient();
 
-const [empresaRes, sucursalesRes, empleadosRes] = await Promise.all([
-  supabase.from('empresas').select('*').eq('id', empresaId).single(),
-  supabase.from('sucursales').select('*').eq('empresa_id', empresaId).order('created_at', { ascending: true }),
-  supabase.from('empleados').select('*, sucursal:sucursales(nombre)').eq('empresa_id', empresaId).order('created_at', { ascending: true })
-]);
+    const [empresaRes, sucursalesRes, empleadosRes] = await Promise.all([
+      supabase.from('empresas').select('*').eq('id', empresaId).single(),
+      supabase.from('sucursales').select('*').eq('empresa_id', empresaId).order('created_at', { ascending: true }),
+      supabase.from('empleados').select('*, sucursal:sucursales(nombre)').eq('empresa_id', empresaId).order('created_at', { ascending: true })
+    ]);
 
-if (empresaRes.error && empresaRes.error.code !== 'PGRST116') throw empresaRes.error;
-if (sucursalesRes.error) throw sucursalesRes.error;
-if (empleadosRes.error) throw empleadosRes.error;
+    if (empresaRes.error && empresaRes.error.code !== 'PGRST116') throw empresaRes.error;
+    if (sucursalesRes.error) throw sucursalesRes.error;
+    if (empleadosRes.error) throw empleadosRes.error;
 
-return {
-  success: true,
-  empresa: empresaRes.data || null,
-  sucursales: sucursalesRes.data || [],
-  empleados: empleadosRes.data || [],
-};
+    return {
+      success: true,
+      empresa: empresaRes.data || null,
+      sucursales: sucursalesRes.data || [],
+      empleados: empleadosRes.data || [],
+    };
   } catch (error) {
-  console.error('Error en obtenerConfiguracionCompleta:', error);
-  return {
-    success: false,
-    error: error instanceof Error ? error.message : 'Error desconocido',
-    sucursales: [],
-    empleados: [],
-  };
-}
+    console.error('Error en obtenerConfiguracionCompleta:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Error desconocido',
+      sucursales: [],
+      empleados: [],
+    };
+  }
 }
 
 export async function obtenerEmpresa() {
@@ -219,35 +221,37 @@ export async function subirLogoEmpresa(empresaId: string, formData: FormData) {
   }
 }
 
-const userInfo = await obtenerUserInfo();
-if (!userInfo.success || !userInfo.user?.empresa?.id) {
-  throw new Error('No se pudo identificar la empresa del usuario');
-}
-const empresaId = userInfo.user.empresa.id;
-const supabase = await createClient();
+export async function obtenerSucursales() {
+  try {
+    const userInfo = await obtenerUserInfo();
+    if (!userInfo.success || !userInfo.user?.empresa?.id) {
+      throw new Error('No se pudo identificar la empresa del usuario');
+    }
+    const empresaId = userInfo.user.empresa.id;
+    const supabase = await createClient();
 
-const { data: sucursales, error } = await supabase
-  .from('sucursales')
-  .select('*')
-  .eq('empresa_id', empresaId)
-  .order('created_at', { ascending: true });
+    const { data: sucursales, error } = await supabase
+      .from('sucursales')
+      .select('*')
+      .eq('empresa_id', empresaId)
+      .order('created_at', { ascending: true });
 
-if (error) {
-  throw new Error(`Error al obtener sucursales: ${error.message}`);
-}
+    if (error) {
+      throw new Error(`Error al obtener sucursales: ${error.message}`);
+    }
 
-return {
-  success: true,
-  sucursales: sucursales || [],
-};
+    return {
+      success: true,
+      sucursales: sucursales || [],
+    };
   } catch (error) {
-  console.error('Error en obtenerSucursales:', error);
-  return {
-    success: false,
-    error: error instanceof Error ? error.message : 'Error desconocido',
-    sucursales: [],
-  };
-}
+    console.error('Error en obtenerSucursales:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Error desconocido',
+      sucursales: [],
+    };
+  }
 }
 
 export interface CrearSucursalData {
@@ -257,39 +261,41 @@ export interface CrearSucursalData {
   email?: string;
 }
 
-const userInfo = await obtenerUserInfo();
-if (!userInfo.success || !userInfo.user?.empresa?.id) {
-  throw new Error('No se pudo identificar la empresa del usuario');
-}
-const empresaId = userInfo.user.empresa.id;
-const supabase = await createClient();
+export async function crearSucursal(data: CrearSucursalData) {
+  try {
+    const userInfo = await obtenerUserInfo();
+    if (!userInfo.success || !userInfo.user?.empresa?.id) {
+      throw new Error('No se pudo identificar la empresa del usuario');
+    }
+    const empresaId = userInfo.user.empresa.id;
+    const supabase = await createClient();
 
-const { error } = await supabase.from('sucursales').insert({
-  nombre: data.nombre,
-  direccion: data.direccion,
-  telefono: data.telefono,
-  email: data.email,
-  empresa_id: empresaId,
-  activa: true,
-});
+    const { error } = await supabase.from('sucursales').insert({
+      nombre: data.nombre,
+      direccion: data.direccion,
+      telefono: data.telefono,
+      email: data.email,
+      empresa_id: empresaId,
+      activa: true,
+    });
 
-if (error) {
-  throw new Error(`Error al crear sucursal: ${error.message}`);
-}
+    if (error) {
+      throw new Error(`Error al crear sucursal: ${error.message}`);
+    }
 
-revalidatePath('/configuracion');
+    revalidatePath('/configuracion');
 
-return {
-  success: true,
-  message: 'Sucursal creada exitosamente',
-};
+    return {
+      success: true,
+      message: 'Sucursal creada exitosamente',
+    };
   } catch (error) {
-  console.error('Error en crearSucursal:', error);
-  return {
-    success: false,
-    error: error instanceof Error ? error.message : 'Error desconocido',
-  };
-}
+    console.error('Error en crearSucursal:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Error desconocido',
+    };
+  }
 }
 
 export async function actualizarSucursal(id: string, data: Partial<Sucursal>) {
@@ -366,38 +372,40 @@ export async function eliminarSucursal(id: string) {
 
 // ============== EMPLEADOS ==============
 
-const userInfo = await obtenerUserInfo();
-if (!userInfo.success || !userInfo.user?.empresa?.id) {
-  throw new Error('No se pudo identificar la empresa del usuario');
-}
-const empresaId = userInfo.user.empresa.id;
-const supabase = await createClient();
+export async function obtenerEmpleados() {
+  try {
+    const userInfo = await obtenerUserInfo();
+    if (!userInfo.success || !userInfo.user?.empresa?.id) {
+      throw new Error('No se pudo identificar la empresa del usuario');
+    }
+    const empresaId = userInfo.user.empresa.id;
+    const supabase = await createClient();
 
-const { data: empleados, error } = await supabase
-  .from('empleados')
-  .select(`
+    const { data: empleados, error } = await supabase
+      .from('empleados')
+      .select(`
         *,
         sucursal:sucursales(nombre)
       `)
-  .eq('empresa_id', empresaId)
-  .order('created_at', { ascending: true });
+      .eq('empresa_id', empresaId)
+      .order('created_at', { ascending: true });
 
-if (error) {
-  throw new Error(`Error al obtener empleados: ${error.message}`);
-}
+    if (error) {
+      throw new Error(`Error al obtener empleados: ${error.message}`);
+    }
 
-return {
-  success: true,
-  empleados: empleados || [],
-};
+    return {
+      success: true,
+      empleados: empleados || [],
+    };
   } catch (error) {
-  console.error('Error en obtenerEmpleados:', error);
-  return {
-    success: false,
-    error: error instanceof Error ? error.message : 'Error desconocido',
-    empleados: [],
-  };
-}
+    console.error('Error en obtenerEmpleados:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Error desconocido',
+      empleados: [],
+    };
+  }
 }
 
 export interface CrearEmpleadoData {
