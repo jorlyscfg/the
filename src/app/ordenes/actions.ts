@@ -623,6 +623,7 @@ export async function obtenerOrdenes() {
           logo_url: orden.sucursales.empresa?.logo_url,
           email: orden.sucursales.empresa?.email,
           sitio_web: orden.sucursales.empresa?.sitio_web,
+          telefono: orden.sucursales.empresa?.telefono,
         }
       } : null,
       empleado_recibe: orden.empleado_recibe ? {
