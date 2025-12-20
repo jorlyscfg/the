@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
+import { obtenerUserInfo } from '@/app/actions';
 
 export interface NuevaOrdenData {
   nombreCliente: string;
@@ -151,10 +152,17 @@ export async function buscarClientes(termino: string) {
   try {
     const supabase = await createClient();
 
-    // Buscar por nombre, teléfono o email
+    const userInfo = await obtenerUserInfo();
+    if (!userInfo.success || !userInfo.user?.sucursal?.id) {
+      throw new Error('No se pudo identificar la sucursal del usuario');
+    }
+    const sucursalId = userInfo.user.sucursal.id;
+
+    // Buscar por nombre, teléfono o email, filtrado por sucursal
     const { data: clientes, error } = await supabase
       .from('clientes')
       .select('id, nombre_completo, telefono, email')
+      .eq('sucursal_id', sucursalId)
       .or(`nombre_completo.ilike.%${termino}%,telefono.ilike.%${termino}%,email.ilike.%${termino}%`)
       .order('nombre_completo', { ascending: true })
       .limit(10);
@@ -179,17 +187,25 @@ export async function buscarClientes(termino: string) {
 
 export async function crearOrden(data: NuevaOrdenData) {
   try {
-    const supabase = await createClient();
+    const userInfo = await obtenerUserInfo();
+    if (!userInfo.success || !userInfo.user?.sucursal?.id) {
+      throw new Error('No se pudo identificar la sucursal del usuario');
+    }
+
+    const { user: usuarioActual } = userInfo;
+    const sucursalId = usuarioActual.sucursal.id;
+    const empleadoId = usuarioActual.id;
 
     // 1. Buscar o crear cliente
     const telefonoLimpio = data.telefonoCliente.replace(/\D/g, '');
-    console.log('Creando orden - Datos recibidos:', { nombre: data.nombreCliente, telefono: data.telefonoCliente, telefonoLimpio });
+    console.log('Creando orden - Datos recibidos:', { nombre: data.nombreCliente, telefono: data.telefonoCliente, telefonoLimpio, sucursalId });
 
     let cliente = null;
     const { data: clienteExistente } = await supabase
       .from('clientes')
       .select('*')
       .eq('telefono', telefonoLimpio)
+      .eq('sucursal_id', sucursalId)
       .single();
 
     console.log('Cliente existente:', clienteExistente);
@@ -220,6 +236,7 @@ export async function crearOrden(data: NuevaOrdenData) {
           nombre_completo: data.nombreCliente,
           telefono: telefonoLimpio,
           email: data.emailCliente,
+          sucursal_id: sucursalId,
         })
         .select()
         .single();
@@ -289,23 +306,8 @@ export async function crearOrden(data: NuevaOrdenData) {
       }
     }
 
-    // 4. Obtener información del usuario logueado para asignar como técnico
-    const { data: { user } } = await supabase.auth.getUser();
-    let empleado_recibe_id = null;
-    let sucursal_id = null;
-
-    if (user) {
-      const { data: empleado } = await supabase
-        .from('empleados')
-        .select('id, sucursal_id')
-        .eq('id', user.id) // Asumiendo que el ID de auth coincide con el de empleados (lo cual es la convención en este proyecto)
-        .single();
-
-      if (empleado) {
-        empleado_recibe_id = empleado.id;
-        sucursal_id = empleado.sucursal_id;
-      }
-    }
+    const empleado_recibe_id = empleadoId;
+    const sucursal_id = sucursalId;
 
     // Si no se encontró sucursal del empleado, buscar la primera disponible
     if (!sucursal_id) {
