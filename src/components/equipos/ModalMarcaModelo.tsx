@@ -12,12 +12,14 @@ import type { TipoEquipo } from './TipoEquipoCard';
 
 interface ModalMarcaModeloProps {
     marca: MarcaModelo | null;
+    empresaId: string;
     onClose: () => void;
     onGuardar: () => void;
 }
 
 export default function ModalMarcaModelo({
     marca,
+    empresaId,
     onClose,
     onGuardar,
 }: ModalMarcaModeloProps) {
@@ -38,6 +40,7 @@ export default function ModalMarcaModelo({
             .from('tipos_equipos')
             .select('*')
             .eq('activo', true)
+            .eq('empresa_id', empresaId)
             .order('nombre');
 
         setTiposEquipos(data || []);
@@ -75,6 +78,7 @@ export default function ModalMarcaModelo({
                         tipo_equipo_id: tipoEquipoId,
                         marca: nombreMarca.trim().toUpperCase(),
                         modelo: modelo.trim().toUpperCase(),
+                        empresa_id: empresaId,
                     });
 
                 if (error) throw error;

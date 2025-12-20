@@ -11,12 +11,14 @@ import type { TipoEquipo } from './TipoEquipoCard';
 
 interface ModalTipoEquipoProps {
     tipo: TipoEquipo | null;
+    empresaId: string;
     onClose: () => void;
     onGuardar: () => void;
 }
 
 export default function ModalTipoEquipo({
     tipo,
+    empresaId,
     onClose,
     onGuardar,
 }: ModalTipoEquipoProps) {
@@ -56,6 +58,7 @@ export default function ModalTipoEquipo({
                     .insert({
                         nombre: nombre.trim().toUpperCase(),
                         descripcion: descripcion.trim() || null,
+                        empresa_id: empresaId,
                     });
 
                 if (error) throw error;

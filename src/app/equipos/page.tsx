@@ -26,6 +26,7 @@ export default function EquiposPage() {
   const [busqueda, setBusqueda] = useState('');
   const debouncedBusqueda = useDebounce(busqueda, 400);
   const [vistaActiva, setVistaActiva] = useState<'tipos' | 'marcas'>('tipos');
+  const [empresaId, setEmpresaId] = useState<string>('');
 
   // Estados para Modales
   const [mostrarModalTipo, setMostrarModalTipo] = useState(false);
@@ -51,12 +52,14 @@ export default function EquiposPage() {
       if (!userInfo.success || !userInfo.user?.empresa?.id) {
         throw new Error('No se pudo identificar la empresa del usuario');
       }
-      const empresaId = userInfo.user.empresa.id;
+      const empresaIdActual = userInfo.user.empresa.id;
+      setEmpresaId(empresaIdActual);
 
       if (vistaActiva === 'tipos') {
         const { data, error } = await supabase
           .from('tipos_equipos')
           .select('*')
+          .eq('empresa_id', empresaIdActual)
           .order('veces_usado', { ascending: false });
 
         if (error) throw error;
@@ -68,6 +71,7 @@ export default function EquiposPage() {
             *,
             tipos_equipos (nombre)
           `)
+          .eq('empresa_id', empresaIdActual)
           .order('veces_usado', { ascending: false });
 
         if (error) throw error;
@@ -268,6 +272,7 @@ export default function EquiposPage() {
       {mostrarModalTipo && (
         <ModalTipoEquipo
           tipo={tipoSeleccionado}
+          empresaId={empresaId}
           onClose={() => {
             setMostrarModalTipo(false);
             setTipoSeleccionado(null);
@@ -283,6 +288,7 @@ export default function EquiposPage() {
       {mostrarModalMarca && (
         <ModalMarcaModelo
           marca={marcaSeleccionada}
+          empresaId={empresaId}
           onClose={() => {
             setMostrarModalMarca(false);
             setMarcaSeleccionada(null);
