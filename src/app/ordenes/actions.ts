@@ -187,6 +187,7 @@ export async function buscarClientes(termino: string) {
 
 export async function crearOrden(data: NuevaOrdenData) {
   try {
+    const supabase = await createClient();
     const userInfo = await obtenerUserInfo();
     if (!userInfo.success || !userInfo.user?.sucursal?.id) {
       throw new Error('No se pudo identificar la sucursal del usuario');
