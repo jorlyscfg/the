@@ -532,6 +532,12 @@ export interface Orden {
 
 export async function obtenerOrdenes() {
   try {
+    const userInfo = await obtenerUserInfo();
+    if (!userInfo.success || !userInfo.user?.sucursal?.id) {
+      throw new Error('No se pudo identificar la sucursal del usuario');
+    }
+
+    const sucursalId = userInfo.user.sucursal.id;
     const supabase = await createClient();
 
     const { data: ordenes, error } = await supabase
@@ -596,6 +602,7 @@ export async function obtenerOrdenes() {
           created_at
         )
       `)
+      .eq('sucursal_id', sucursalId)
       .order('fecha_ingreso', { ascending: false });
 
     if (error) {
@@ -730,6 +737,12 @@ export interface OrdenDetalle {
 
 export async function obtenerOrdenPorId(id: string) {
   try {
+    const userInfo = await obtenerUserInfo();
+    if (!userInfo.success || !userInfo.user?.sucursal?.id) {
+      throw new Error('No se pudo identificar la sucursal del usuario');
+    }
+
+    const sucursalId = userInfo.user.sucursal.id;
     const supabase = await createClient();
 
     const { data: orden, error } = await supabase
@@ -782,6 +795,7 @@ export async function obtenerOrdenPorId(id: string) {
         )
       `)
       .eq('id', id)
+      .eq('sucursal_id', sucursalId)
       .single();
 
     if (error) {

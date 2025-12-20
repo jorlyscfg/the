@@ -38,11 +38,20 @@ const nombresMeses = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 's
  */
 export async function obtenerDatosCompletosDashboard() {
   try {
+    const userInfo = await obtenerUserInfo();
+    if (!userInfo.success || !userInfo.user?.empresa?.id) {
+      throw new Error('No se pudo identificar la empresa del usuario');
+    }
+
+    const empresaId = userInfo.user.empresa.id;
     const supabase = await createClient();
     const anioActual = new Date().getFullYear();
 
-    // Llamada única a la función RPC
-    const { data, error } = await supabase.rpc('get_dashboard_data', { p_anio: anioActual });
+    // Llamada única a la función RPC con filtrado por empresa
+    const { data, error } = await supabase.rpc('get_dashboard_data', {
+      p_anio: anioActual,
+      p_empresa_id: empresaId
+    });
 
     if (error) throw error;
 
