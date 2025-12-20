@@ -1,32 +1,32 @@
 services:
-  sukhaspa:
+  the-app:
     image: node:22-alpine
     working_dir: /app
     ports:
-      - "3001:3001"
+      - "3003:3003"
     environment:
-      - PORT=3001
-      - SUPABASE_URL=${SUPABASE_URL}
-      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+      - PORT=3003
+      - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
+      - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
       - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY}
       - SUPABASE_JWT_SECRET=${SUPABASE_JWT_SECRET}
       - SUPABASE_ACCESS_TOKEN=${SUPABASE_ACCESS_TOKEN}
       - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
       - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - GITHUB_REPOSITORY=${GITHUB_REPOSITORY}
     command: >
       sh -c "
         apk add --no-cache git &&
-        git clone https://jorlyscfg:$$GITHUB_TOKEN@github.com/jorlyscfg/sukhaspa.git /tmp/repo &&
+        git clone https://jorlyscfg:$$GITHUB_TOKEN@github.com/jorlyscfg/the.git /tmp/repo &&
         cd /tmp/repo &&
         git checkout main &&
         cp -r /tmp/repo/* /app/ &&
         rm -rf /tmp/repo &&
         cd /app &&
         echo '🔧 Verificando variables de entorno...' &&
-        echo \"SUPABASE_URL: $$SUPABASE_URL\" &&
-        echo \"SUPABASE_ANON_KEY (first 20 chars): $${SUPABASE_ANON_KEY:0:20}...\" &&
+        echo \"NEXT_PUBLIC_SUPABASE_URL: $$NEXT_PUBLIC_SUPABASE_URL\" &&
         echo \"NEXTAUTH_SECRET: $$NEXTAUTH_SECRET\" &&
-        NODE_ENV=development npm ci &&
+        npm ci &&
         npm run build &&
         cp -r .next/static .next/standalone/.next/ &&
         [ -d public ] && cp -r public .next/standalone/ || echo 'No public directory found' &&
