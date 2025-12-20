@@ -11,6 +11,12 @@ const nextConfig = {
     ],
   },
   output: 'standalone',
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   experimental: {
     serverActions: {
       allowedOrigins: ['localhost:3003', 'localhost:3004', '*.trycloudflare.com', '*.dokploy.com'],

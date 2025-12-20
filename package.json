@@ -1,6 +1,6 @@
 {
   "name": "the",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -37,16 +37,16 @@
     "xlsx": "^0.18.5",
     "zod": "^3.25.76",
     "@tailwindcss/postcss": "^4.0.0",
-    "tailwindcss": "^4.0.0"
+    "tailwindcss": "^4.0.0",
+    "typescript": "^5.7.2",
+    "@types/node": "^22.10.2",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0"
   },
   "devDependencies": {
-    "@types/node": "^22.10.2",
     "@types/qrcode": "^1.5.6",
-    "@types/react": "^19.0.0",
-    "@types/react-dom": "^19.0.0",
     "@types/react-signature-canvas": "^1.0.5",
     "eslint": "^9.39.1",
-    "eslint-config-next": "^16.0.7",
-    "typescript": "^5.7.2"
+    "eslint-config-next": "16.0.10"
   }
 }

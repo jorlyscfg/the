@@ -6,22 +6,18 @@ RUN npm install -g npm@latest
 # Install dependencies only when needed
 FROM base AS deps
 WORKDIR /app
+ENV NODE_ENV=development
 
 # Install dependencies based on the preferred package manager
 COPY package.json package-lock.json* ./
-RUN npm ci
+RUN npm install
 
 # Rebuild the source code only when needed
 FROM base AS builder
 WORKDIR /app
+ENV NODE_ENV=development
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-
-# Environment variables must be present at build time
-# ARG NEXT_PUBLIC_SUPABASE_URL
-# ARG NEXT_PUBLIC_SUPABASE_ANON_KEY
-# ENV NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
-# ENV NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
 
 # Disable telemetry during build.
 ENV NEXT_TELEMETRY_DISABLED=1
