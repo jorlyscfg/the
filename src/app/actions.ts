@@ -40,6 +40,7 @@ export async function obtenerDatosCompletosDashboard(prefetchedUserInfo?: any) {
   try {
     const userInfo = prefetchedUserInfo || await obtenerUserInfo();
     if (!userInfo.success || !userInfo.user?.empresa?.id) {
+      console.warn('[Dashboard] Fallo al identificar empresa:', userInfo.error);
       if (prefetchedUserInfo) return { success: false, error: 'No se pudo identificar la empresa' };
       throw new Error('No se pudo identificar la empresa del usuario');
     }
@@ -131,6 +132,8 @@ export async function obtenerUserInfo() {
       // Retornar error silencioso sin loguear en consola de servidor
       return { success: false, error: 'No autenticado' };
     }
+
+    console.log(`[Auth] Usuario autenticado: ${user.email} (${user.id})`);
 
     const { data: empleado, error: empleadoError } = await supabase
       .from('empleados')
