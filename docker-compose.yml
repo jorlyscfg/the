@@ -1,6 +1,6 @@
 services:
   the-app:
-    image: node:22-alpine
+    image: the-app:latest
     working_dir: /app
     ports:
       - "3003:3003"
