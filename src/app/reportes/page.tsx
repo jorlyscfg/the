@@ -46,11 +46,11 @@ export default function ReportesPage() {
 
   const estados = [
     'TODOS',
-    'PENDIENTE',
-    'EN_REVISION',
-    'EN_REPARACION',
-    'REPARADO',
-    'ENTREGADO',
+    'PENDIENTES',
+    'EN PROCESO',
+    'LISTOS',
+    'SIN SOLUCION',
+    'ENTREGADOS',
   ];
 
   const cargarReporte = async () => {

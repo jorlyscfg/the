@@ -14,6 +14,7 @@ export interface Empresa {
   email: string | null;
   sitio_web: string | null;
   activa: boolean;
+  dias_almacenamiento: number;
   created_at: string;
   updated_at: string;
 }
@@ -133,6 +134,7 @@ export async function actualizarEmpresa(data: Partial<Empresa>) {
           telefono: data.telefono,
           email: data.email,
           sitio_web: data.sitio_web,
+          dias_almacenamiento: data.dias_almacenamiento,
           updated_at: new Date().toISOString(),
         })
         .eq('id', empresaExistente.id);
@@ -149,6 +151,7 @@ export async function actualizarEmpresa(data: Partial<Empresa>) {
         telefono: data.telefono,
         email: data.email,
         sitio_web: data.sitio_web,
+        dias_almacenamiento: data.dias_almacenamiento || 30,
       });
 
       if (error) {

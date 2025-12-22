@@ -24,11 +24,11 @@ export interface EstadisticasEstados {
 }
 
 const coloresEstados: Record<string, string> = {
-  PENDIENTE: '#eab308',
-  EN_REVISION: '#3b82f6',
-  EN_REPARACION: '#f97316',
-  REPARADO: '#10b981',
-  ENTREGADO: '#6b7280',
+  'PENDIENTES': '#eab308',
+  'EN PROCESO': '#3b82f6',
+  'LISTOS': '#10b981',
+  'SIN SOLUCION': '#6b7280',
+  'ENTREGADOS': '#6366f1',
 };
 
 const nombresMeses = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];

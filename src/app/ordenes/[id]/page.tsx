@@ -68,12 +68,11 @@ export default function OrdenDetallePage() {
 
   const getEstadoBadgeClass = (estado: string) => {
     const classes = {
-      'PENDIENTE': 'bg-yellow-100 text-yellow-800',
-      'EN_REVISION': 'bg-blue-100 text-blue-800',
-      'EN_REPARACION': 'bg-orange-100 text-orange-800',
-      'REPARADO': 'bg-green-100 text-green-800',
-      'ENTREGADO': 'bg-gray-100 text-gray-800',
-      'CANCELADO': 'bg-red-100 text-red-800',
+      'PENDIENTES': 'bg-yellow-100 text-yellow-800',
+      'EN PROCESO': 'bg-blue-100 text-blue-800',
+      'LISTOS': 'bg-green-100 text-green-800',
+      'SIN SOLUCION': 'bg-rose-100 text-rose-800',
+      'ENTREGADOS': 'bg-indigo-100 text-indigo-800',
     };
     return classes[estado as keyof typeof classes] || 'bg-gray-100 text-gray-800';
   };
@@ -103,11 +102,11 @@ export default function OrdenDetallePage() {
   // Removed: handleActualizarEstado function
 
   const estados = [
-    'PENDIENTE',
-    'EN_REVISION',
-    'EN_REPARACION',
-    'REPARADO',
-    'ENTREGADO',
+    'PENDIENTES',
+    'EN PROCESO',
+    'LISTOS',
+    'SIN SOLUCION',
+    'ENTREGADOS',
   ];
 
   if (loading) {

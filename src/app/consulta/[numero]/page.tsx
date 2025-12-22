@@ -133,38 +133,38 @@ export default function ConsultaOrdenPage() {
 
   const getEstadoInfo = (estado: string) => {
     const estados = {
-      'PENDIENTE': {
+      'PENDIENTES': {
         label: 'Pendiente de Revisión',
         color: 'bg-yellow-100 text-yellow-800 border-yellow-300',
         icon: Clock,
         description: 'Tu equipo ha sido recibido y está en espera de revisión técnica.'
       },
-      'EN_REVISION': {
-        label: 'En Revisión',
+      'EN PROCESO': {
+        label: 'En Proceso',
         color: 'bg-blue-100 text-blue-800 border-blue-300',
-        icon: AlertCircle,
-        description: 'Nuestro técnico está revisando tu equipo para determinar la falla.'
-      },
-      'EN_REPARACION': {
-        label: 'En Reparación',
-        color: 'bg-orange-100 text-orange-800 border-orange-300',
         icon: Wrench,
-        description: 'Estamos trabajando en la reparación de tu equipo.'
+        description: 'Estamos trabajando en el diagnóstico o reparación de tu equipo.'
       },
-      'REPARADO': {
-        label: 'Reparado',
+      'LISTOS': {
+        label: 'Listo para Entrega',
         color: 'bg-green-100 text-green-800 border-green-300',
         icon: CheckCircle,
         description: 'Tu equipo está listo para ser entregado. ¡Pasa a recogerlo!'
       },
-      'ENTREGADO': {
+      'SIN SOLUCION': {
+        label: 'Sin Solución',
+        color: 'bg-rose-100 text-rose-800 border-rose-300',
+        icon: AlertCircle,
+        description: 'Lamentablemente no fue posible reparar tu equipo.'
+      },
+      'ENTREGADOS': {
         label: 'Entregado',
         color: 'bg-gray-100 text-gray-800 border-gray-300',
         icon: CheckCircle,
         description: 'Tu equipo ha sido entregado exitosamente.'
       },
     };
-    return estados[estado as keyof typeof estados] || estados['PENDIENTE'];
+    return estados[estado as keyof typeof estados] || estados['PENDIENTES'];
   };
 
   const formatearMoneda = (monto: number | null) => {

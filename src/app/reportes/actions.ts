@@ -111,10 +111,10 @@ export async function obtenerReporteOrdenes(
         0
       ),
       ordenes_completadas: ordenesFormateadas.filter(
-        (o) => o.estado === 'ENTREGADO'
+        (o) => o.estado === 'ENTREGADOS'
       ).length,
       ordenes_pendientes: ordenesFormateadas.filter(
-        (o) => o.estado !== 'ENTREGADO'
+        (o) => o.estado !== 'ENTREGADOS'
       ).length,
     };
 
@@ -171,7 +171,7 @@ export async function obtenerEstadisticasMensuales(anio: number) {
       const mes = fecha.getMonth();
 
       estadisticas[mes].total_ordenes++;
-      if (orden.estado === 'ENTREGADO') {
+      if (orden.estado === 'ENTREGADOS') {
         estadisticas[mes].completadas++;
         estadisticas[mes].ingresos += orden.costo_final || 0;
       }
@@ -272,7 +272,7 @@ export async function obtenerTiempoPromedioReparacion(
         `)
       .eq('sucursales.empresa_id', empresaId)
       .not('fecha_salida', 'is', null)
-      .in('estado', ['ENTREGADO', 'REPARADO']);
+      .in('estado', ['ENTREGADOS', 'LISTOS']);
 
     if (fechaInicio) query = query.gte('fecha_ingreso', fechaInicio);
     if (fechaFin) query = query.lte('fecha_ingreso', fechaFin);

@@ -130,11 +130,11 @@ export default function OrdenesListClient({ initialOrdenes: ordenes }: OrdenesLi
                     <div className="flex bg-white p-1 rounded-xl shadow-sm border border-gray-100 w-full overflow-x-auto no-scrollbar h-11 shrink-0">
                         {[
                             { val: 'all', label: 'Todas', count: ordenes.length },
-                            { val: 'PENDIENTE', label: 'Pendientes', count: ordenes.filter(o => o.estado === 'PENDIENTE').length },
-                            { val: 'EN_REVISION', label: 'Revisión', count: ordenes.filter(o => o.estado === 'EN_REVISION').length },
-                            { val: 'EN_REPARACION', label: 'En Proceso', count: ordenes.filter(o => o.estado === 'EN_REPARACION').length },
-                            { val: 'REPARADO', label: 'Listas', count: ordenes.filter(o => o.estado === 'REPARADO').length },
-                            { val: 'ENTREGADO', label: 'Entregadas', count: ordenes.filter(o => o.estado === 'ENTREGADO').length }
+                            { val: 'PENDIENTES', label: 'Pendientes', count: ordenes.filter(o => o.estado === 'PENDIENTES').length },
+                            { val: 'EN PROCESO', label: 'En Proceso', count: ordenes.filter(o => o.estado === 'EN PROCESO').length },
+                            { val: 'LISTOS', label: 'Listos', count: ordenes.filter(o => o.estado === 'LISTOS').length },
+                            { val: 'SIN SOLUCION', label: 'Sin Solución', count: ordenes.filter(o => o.estado === 'SIN SOLUCION').length },
+                            { val: 'ENTREGADOS', label: 'Entregados', count: ordenes.filter(o => o.estado === 'ENTREGADOS').length }
                         ].map((tab) => (
                             <button
                                 key={tab.val}

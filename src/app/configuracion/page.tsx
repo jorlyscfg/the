@@ -3,8 +3,7 @@
 import { useState, useEffect } from 'react';
 import Navbar from '@/components/layout/Navbar';
 import {
-  Building2, Save, MapPin, Phone, Mail, Globe,
-  FileText, Plus, Edit, Trash2, Users, X, Image as ImageIcon, Upload, Shield
+  FileText, Plus, Edit, Trash2, Users, X, Image as ImageIcon, Upload, Shield, Clock, Building2, Save, Phone, Mail, Globe, MapPin
 } from 'lucide-react';
 import type { Empresa, Sucursal, Empleado } from './actions';
 import {
@@ -66,6 +65,7 @@ export default function ConfiguracionPage() {
     telefono: '',
     email: '',
     sitio_web: '',
+    dias_almacenamiento: 30,
   });
 
   const [formSucursal, setFormSucursal] = useState({
@@ -104,6 +104,7 @@ export default function ConfiguracionPage() {
             telefono: result.empresa.telefono || '',
             email: result.empresa.email || '',
             sitio_web: result.empresa.sitio_web || '',
+            dias_almacenamiento: result.empresa.dias_almacenamiento || 30,
           });
           setLogoPreview(result.empresa.logo_url || null);
         }
@@ -488,6 +489,14 @@ export default function ConfiguracionPage() {
                       value={formEmpresa.email}
                       onChange={(e) => setFormEmpresa({ ...formEmpresa, email: e.target.value })}
                       icon={<Mail className="w-4 h-4" />}
+                    />
+                    <Input
+                      label="Días Máx. Almacenamiento"
+                      type="number"
+                      value={formEmpresa.dias_almacenamiento}
+                      onChange={(e) => setFormEmpresa({ ...formEmpresa, dias_almacenamiento: parseInt(e.target.value) || 0 })}
+                      required
+                      icon={<Clock className="w-4 h-4" />}
                     />
                     <div className="md:col-span-2">
                       <Input

@@ -1,6 +1,6 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { Eye, Calendar, User, Laptop, DollarSign, Trash2, Loader2, Maximize2, ImageIcon, Pencil, Hash, Package, FileText, ClipboardList, PenTool, CheckCircle2, History as HistoryIcon, Banknote, Plus, Phone, Mail, Clock, ChevronDown, ChevronUp, MessageSquare } from 'lucide-react';
+import { Eye, Calendar, User, Laptop, DollarSign, Trash2, Loader2, Maximize2, ImageIcon, Pencil, Hash, Package, FileText, ClipboardList, CheckCircle2, History as HistoryIcon, Banknote, Plus, Phone, Mail, Clock, ChevronDown, ChevronUp, MessageSquare, AlertCircle } from 'lucide-react';
 import {
     DataCard,
     DataCardHeader,
@@ -33,28 +33,26 @@ export default function OrdenCard({ orden }: OrdenCardProps) {
     const [showEditModal, setShowEditModal] = useState(false);
     const [showLightbox, setShowLightbox] = useState(false);
     const [showPagosModal, setShowPagosModal] = useState(false);
-    const [showSignatureModal, setShowSignatureModal] = useState(false);
     const [showTicketModal, setShowTicketModal] = useState(false);
     const [isExpanded, setIsExpanded] = useState(false);
     const { success: showSuccess, error: showError } = useNotification();
     const router = useRouter();
 
     const statusOptions = [
-        { value: 'PENDIENTE', label: 'Pendiente' },
-        { value: 'EN_REVISION', label: 'En Revisión' },
-        { value: 'EN_REPARACION', label: 'En Proceso' },
-        { value: 'REPARADO', label: 'Lista / Reparada' },
-        { value: 'ENTREGADO', label: 'Entregada' },
+        { value: 'PENDIENTES', label: 'Pendientes' },
+        { value: 'EN PROCESO', label: 'En Proceso' },
+        { value: 'LISTOS', label: 'Listos' },
+        { value: 'SIN SOLUCION', label: 'Sin Solución' },
+        { value: 'ENTREGADOS', label: 'Entregados' },
     ];
 
     const getEstadoBadgeClass = (estado: string) => {
         const classes = {
-            'PENDIENTE': 'bg-yellow-100 text-yellow-700',
-            'EN_REVISION': 'bg-blue-100 text-blue-700',
-            'EN_REPARACION': 'bg-orange-100 text-orange-700',
-            'REPARADO': 'bg-green-100 text-green-700',
-            'ENTREGADO': 'bg-gray-100 text-gray-600',
-            'CANCELADO': 'bg-red-100 text-red-700',
+            'PENDIENTES': 'bg-yellow-100 text-yellow-700',
+            'EN PROCESO': 'bg-blue-100 text-blue-700',
+            'LISTOS': 'bg-green-100 text-green-700',
+            'SIN SOLUCION': 'bg-rose-100 text-rose-700',
+            'ENTREGADOS': 'bg-indigo-100 text-indigo-700',
         };
         return classes[estado as keyof typeof classes] || 'bg-gray-100 text-gray-800';
     };
@@ -200,14 +198,144 @@ export default function OrdenCard({ orden }: OrdenCardProps) {
         }
     };
 
+    // Lógica para badge de almacenamiento
+    const renderStorageBadge = () => {
+        if (!['LISTOS', 'SIN SOLUCION'].includes(orden.estado)) return null;
+
+        const diasMaximos = orden.sucursal?.empresa?.dias_almacenamiento || 30;
+
+        // Buscar la fecha en que entró a este estado
+        // Usamos el historial ordenado por fecha descendente (asumiendo que viene así o buscamos el último)
+        // La consulta original ordena ordenes por fecha_ingreso, pero no garantiza el orden del historial.
+        // Haremos un sort por seguridad.
+        const historialOrdenado = [...(orden.historial || [])].sort((a, b) =>
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
+
+        const ultimoCambio = historialOrdenado.find(h => h.estado_nuevo === orden.estado);
+        const fechaInicio = ultimoCambio ? new Date(ultimoCambio.created_at) : new Date(orden.updated_at || orden.fecha_ingreso);
+
+        const fechaActual = new Date();
+        const diasTranscurridos = Math.floor((fechaActual.getTime() - fechaInicio.getTime()) / (1000 * 60 * 60 * 24));
+        const diasRestantes = diasMaximos - diasTranscurridos;
+
+        let colorClass = '';
+        let texto = '';
+        let Icon = Clock;
+
+        if (diasRestantes < 0) {
+            // Vencido
+            colorClass = 'bg-red-100 text-red-700 border-red-200';
+            texto = `-${Math.abs(diasRestantes)}`;
+            Icon = AlertCircle;
+        } else if (diasRestantes <= 2) {
+            // Por vencer (Naranja)
+            colorClass = 'bg-orange-100 text-orange-700 border-orange-200';
+            texto = `${diasRestantes}`;
+            Icon = AlertCircle;
+        } else {
+            // A tiempo (Verde)
+            colorClass = 'bg-emerald-100 text-emerald-700 border-emerald-200';
+            texto = `${diasRestantes}`;
+            Icon = Clock;
+        }
+
+        const textoBadge = diasRestantes < 0
+            ? `${Math.abs(diasRestantes)} VENCIDOS`
+            : `${diasRestantes} RESTANTES`;
+
+        return (
+            <div className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-tight border whitespace-nowrap shrink-0 ${colorClass}`} title={`Días máximos: ${diasMaximos}`}>
+                <Icon className="w-2.5 h-2.5" />
+                <span className="whitespace-nowrap">{textoBadge}</span>
+            </div>
+        );
+    };
+
+    const renderFooterDates = () => {
+        const isReadyOrNoSolution = ['LISTOS', 'SIN SOLUCION'].includes(orden.estado);
+
+        let fechaCambioStr = '';
+        if (isReadyOrNoSolution) {
+            const historialOrdenado = [...(orden.historial || [])].sort((a, b) =>
+                new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+            );
+            const ultimoCambio = historialOrdenado.find(h => h.estado_nuevo === orden.estado);
+            const fechaInicio = ultimoCambio ? new Date(ultimoCambio.created_at) : new Date(orden.updated_at || orden.fecha_ingreso);
+            fechaCambioStr = formatearFecha(fechaInicio.toISOString());
+        }
+
+        return (
+            <div className="flex flex-col sm:flex-row sm:items-center gap-x-4 gap-y-2 text-gray-400">
+                <div className="flex items-center gap-1.5 shrink-0 whitespace-nowrap">
+                    <Clock className="w-3 h-3" />
+                    <span className="text-[9px] font-bold tracking-tighter uppercase">ENTRÓ: {formatearFecha(orden.fecha_ingreso)}</span>
+                </div>
+                {isReadyOrNoSolution && (
+                    <div className="flex flex-row items-center gap-4 sm:border-l sm:border-gray-200 sm:pl-4 border-t sm:border-t-0 pt-2 sm:pt-0">
+                        <div className="flex items-center gap-1 text-gray-500 shrink-0 whitespace-nowrap">
+                            <CheckCircle2 className="w-3 h-3" />
+                            <span className="text-[9px] font-bold tracking-tighter uppercase">{orden.estado}: {fechaCambioStr}</span>
+                        </div>
+                        {renderStorageBadge()}
+                    </div>
+                )}
+            </div>
+        );
+    };
+
     return (
         <DataCard className={`group ${isDeleting ? 'opacity-50 pointer-events-none' : ''}`}>
             {/* Header: Numero de Orden y Acciones */}
             <DataCardHeader
-                title={orden.numero_orden}
-                subtitle="Orden"
+                title="Orden"
+                titleClassName="text-gray-400"
+                subtitle={orden.numero_orden}
+                subtitleClassName="text-xs font-bold text-gray-900 mt-0.5"
+                alignActions="start"
                 actions={
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex flex-col items-end gap-2">
+                        <div className="flex items-center gap-1.5 leading-none">
+                            <button
+                                onClick={handleCompartirWhatsApp}
+                                disabled={isSharing}
+                                className="p-1 text-gray-300 hover:text-green-600 hover:bg-green-50 rounded-lg transition-all"
+                                title="Compartir ticket por WhatsApp"
+                            >
+                                {isSharing ? (
+                                    <div className="animate-spin rounded-full h-3.5 w-3.5 border-b-2 border-green-600"></div>
+                                ) : (
+                                    <MessageSquare className="w-3.5 h-3.5" />
+                                )}
+                            </button>
+                            <button
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    setShowEditModal(true);
+                                }}
+                                className="p-1 text-gray-300 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all"
+                                title="Editar orden"
+                            >
+                                <Pencil className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    setShowConfirmModal(true);
+                                }}
+                                disabled={isDeleting}
+                                className="p-1 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                                title="Eliminar orden"
+                            >
+                                {isDeleting ? (
+                                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                ) : (
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                )}
+                            </button>
+                        </div>
                         <StatusSelector
                             value={orden.estado}
                             onChange={handleCambiarEstado}
@@ -216,45 +344,6 @@ export default function OrdenCard({ orden }: OrdenCardProps) {
                             options={statusOptions}
                             getBadgeClass={getEstadoBadgeClass}
                         />
-                        <button
-                            onClick={handleCompartirWhatsApp}
-                            disabled={isSharing}
-                            className="p-1.5 text-gray-300 hover:text-green-600 hover:bg-green-50 rounded-lg transition-all"
-                            title="Compartir ticket por WhatsApp"
-                        >
-                            {isSharing ? (
-                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-600"></div>
-                            ) : (
-                                <MessageSquare className="w-4 h-4" />
-                            )}
-                        </button>
-                        <button
-                            onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                setShowEditModal(true);
-                            }}
-                            className="p-1.5 text-gray-300 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all"
-                            title="Editar orden"
-                        >
-                            <Pencil className="w-4 h-4" />
-                        </button>
-                        <button
-                            onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                setShowConfirmModal(true);
-                            }}
-                            disabled={isDeleting}
-                            className="p-1.5 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
-                            title="Eliminar orden"
-                        >
-                            {isDeleting ? (
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                            ) : (
-                                <Trash2 className="w-4 h-4" />
-                            )}
-                        </button>
                     </div>
                 }
             />
@@ -443,74 +532,64 @@ export default function OrdenCard({ orden }: OrdenCardProps) {
                 </div>
 
                 {/* Collapsible History Section */}
-                {orden.historial && orden.historial.length > 0 && (
-                    <div className="border-t border-gray-50 pt-2">
-                        <button
-                            onClick={() => setIsExpanded(!isExpanded)}
-                            className="w-full flex items-center justify-between text-[9px] font-bold text-gray-400 uppercase tracking-widest py-1 hover:text-primary-500 transition-colors"
-                        >
-                            <div className="flex items-center gap-1.5">
-                                <HistoryIcon className="w-3 h-3" />
-                                Historial ({orden.historial.length})
-                            </div>
-                            {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-                        </button>
+                {
+                    orden.historial && orden.historial.length > 0 && (
+                        <div className="border-t border-gray-50 pt-2">
+                            <button
+                                onClick={() => setIsExpanded(!isExpanded)}
+                                className="w-full flex items-center justify-between text-[9px] font-bold text-gray-400 uppercase tracking-widest py-1 hover:text-primary-500 transition-colors"
+                            >
+                                <div className="flex items-center gap-1.5">
+                                    <HistoryIcon className="w-3 h-3" />
+                                    Historial ({orden.historial.length})
+                                </div>
+                                {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                            </button>
 
-                        {isExpanded && (
-                            <div className="mt-3 space-y-4">
-                                {/* Historial de Cambios */}
-                                <div className="space-y-2 max-h-[100px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-gray-200">
-                                    <div className="sticky top-0 bg-white/95 backdrop-blur-sm z-10 pb-1">
-                                        <span className="text-[8px] font-bold text-gray-400 uppercase tracking-widest block">Movimientos</span>
-                                    </div>
-                                    {orden.historial.map((item) => (
-                                        <div key={item.id} className="border-l-2 border-primary-200 pl-2.5 py-1 text-[10px]">
-                                            <div className="flex items-center justify-between mb-0.5">
-                                                <span className="font-bold text-gray-700 uppercase tracking-tight">
-                                                    {item.estado_nuevo.replace('_', ' ')}
-                                                </span>
-                                                <span className="text-[9px] text-gray-400 font-medium">
-                                                    {new Date(item.created_at).toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit' })}
-                                                </span>
-                                            </div>
-                                            {item.observaciones && (
-                                                <p className="text-gray-500 leading-tight line-clamp-2 italic">
-                                                    {item.observaciones}
-                                                </p>
-                                            )}
+                            {isExpanded && (
+                                <div className="mt-3 space-y-4">
+                                    {/* Historial de Cambios */}
+                                    <div className="space-y-2 max-h-[100px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-gray-200">
+                                        <div className="sticky top-0 bg-white/95 backdrop-blur-sm z-10 pb-1">
+                                            <span className="text-[8px] font-bold text-gray-400 uppercase tracking-widest block">Movimientos</span>
                                         </div>
-                                    ))}
-                                </div>
+                                        {orden.historial.map((item) => (
+                                            <div key={item.id} className="border-l-2 border-primary-200 pl-2.5 py-1 text-[10px]">
+                                                <div className="flex items-center justify-between mb-0.5">
+                                                    <span className="font-bold text-gray-700 uppercase tracking-tight">
+                                                        {item.estado_nuevo.replace('_', ' ')}
+                                                    </span>
+                                                    <span className="text-[9px] text-gray-400 font-medium">
+                                                        {new Date(item.created_at).toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit' })}
+                                                    </span>
+                                                </div>
+                                                {item.observaciones && (
+                                                    <p className="text-gray-500 leading-tight line-clamp-2 italic">
+                                                        {item.observaciones}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
 
-                                {/* Historial de Pagos */}
-                                <div className="border-t border-gray-50 pt-3">
-                                    <span className="text-[8px] font-bold text-gray-400 uppercase tracking-widest block mb-2">Desglose de Pagos</span>
-                                    <div className="scale-90 origin-top-left -mr-[11%]">
-                                        <HistorialPagos ordenId={orden.id} />
+                                    {/* Historial de Pagos */}
+                                    <div className="border-t border-gray-50 pt-3">
+                                        <span className="text-[8px] font-bold text-gray-400 uppercase tracking-widest block mb-2">Desglose de Pagos</span>
+                                        <div className="scale-90 origin-top-left -mr-[11%]">
+                                            <HistorialPagos ordenId={orden.id} />
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        )}
-                    </div>
-                )}
-            </DataCardContent>
+                            )}
+                        </div>
+                    )
+                }
+            </DataCardContent >
 
             <DataCardFooter>
-                <div className="flex items-center gap-1.5 text-gray-400 col-span-1">
-                    <Clock className="w-3.5 h-3.5" />
-                    <span className="text-[10px] font-bold tracking-tighter">Entró: {formatearFecha(orden.fecha_ingreso)}</span>
-                </div>
+                {renderFooterDates()}
 
-                <div className="flex items-center justify-end gap-2 col-span-1 border-0">
-                    {orden.firma_cliente_url && (
-                        <button
-                            onClick={() => setShowSignatureModal(true)}
-                            className="flex items-center gap-1 text-[9px] font-bold text-primary-600 bg-primary-50 px-1.5 py-0.5 rounded border border-primary-100 hover:bg-primary-100 transition-colors"
-                        >
-                            <PenTool className="w-2.5 h-2.5" />
-                            Firma
-                        </button>
-                    )}
+                <div className="flex items-center justify-end gap-2 border-0">
                     {orden.fecha_salida && (
                         <div className="flex items-center gap-1 text-[9px] font-bold text-green-600 bg-green-50 px-1.5 py-0.5 rounded border border-green-100">
                             <CheckCircle2 className="w-2.5 h-2.5" />
@@ -554,29 +633,12 @@ export default function OrdenCard({ orden }: OrdenCardProps) {
                 />
             </Modal>
 
-            {/* Modal de Firma */}
-            <Modal
-                isOpen={showSignatureModal}
-                onClose={() => setShowSignatureModal(false)}
-                title={`Firma del Cliente - ${orden.numero_orden}`}
-            >
-                <div className="flex flex-col items-center gap-4 py-4">
-                    <div className="w-full aspect-[4/3] bg-gray-50 rounded-xl border border-gray-100 overflow-hidden flex items-center justify-center p-4">
-                        <img
-                            src={orden.firma_cliente_url!}
-                            alt="Firma del cliente"
-                            className="max-w-full max-h-full object-contain"
-                        />
-                    </div>
-                </div>
-            </Modal>
-
             {/* Modal de Ticket de Servicio */}
             <TicketModal
                 isOpen={showTicketModal}
                 onClose={() => setShowTicketModal(false)}
                 orden={orden as unknown as OrdenDetalle}
             />
-        </DataCard>
+        </DataCard >
     );
 }

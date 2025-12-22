@@ -366,7 +366,7 @@ export async function crearOrden(data: NuevaOrdenData) {
         numero_serie: data.serie,
         accesorios: data.accesorios,
         problema_reportado: data.problema,
-        estado: 'PENDIENTE',
+        estado: 'PENDIENTES',
         numero_orden: numeroOrden,
         firma_cliente_url: firmaUrl,
       })
@@ -380,7 +380,7 @@ export async function crearOrden(data: NuevaOrdenData) {
     // 7. Registrar creación en historial
     await supabase.from('historial_orden').insert({
       orden_id: orden.id,
-      estado_nuevo: 'PENDIENTE',
+      estado_nuevo: 'PENDIENTES',
       accion: 'creacion',
       observaciones: 'Orden de servicio creada inicialmente.'
     });
@@ -477,6 +477,7 @@ export interface Orden {
   numero_orden: string;
   estado: string;
   fecha_ingreso: string;
+  updated_at?: string;
   fecha_salida?: string | null;
   costo_estimado?: number | null;
   costo_final?: number | null;
@@ -512,6 +513,7 @@ export interface Orden {
       email: string | null;
       sitio_web: string | null;
       telefono: string | null;
+      dias_almacenamiento?: number;
     };
   } | null;
   empleado_recibe?: {
@@ -550,6 +552,7 @@ export async function obtenerOrdenes() {
         numero_orden,
         estado,
         fecha_ingreso,
+        updated_at,
         fecha_salida,
         costo_estimado,
         costo_final,
@@ -568,11 +571,10 @@ export async function obtenerOrdenes() {
           telefono,
           whatsapp,
           empresa:empresas!sucursales_empresa_id_fkey (
-            nombre,
-            logo_url,
             email,
             sitio_web,
-            telefono
+            telefono,
+            dias_almacenamiento
           )
         ),
         empleado_recibe:empleados!ordenes_servicio_empleado_recibe_id_fkey (
@@ -618,6 +620,7 @@ export async function obtenerOrdenes() {
       numero_orden: orden.numero_orden,
       estado: orden.estado,
       fecha_ingreso: orden.fecha_ingreso,
+      updated_at: orden.updated_at,
       fecha_salida: orden.fecha_salida,
       costo_estimado: orden.costo_estimado,
       costo_final: orden.costo_final,
@@ -630,10 +633,10 @@ export async function obtenerOrdenes() {
         whatsapp: orden.sucursales.whatsapp,
         empresa: {
           nombre: orden.sucursales.empresa?.nombre || 'Taller',
-          logo_url: orden.sucursales.empresa?.logo_url,
           email: orden.sucursales.empresa?.email,
           sitio_web: orden.sucursales.empresa?.sitio_web,
           telefono: orden.sucursales.empresa?.telefono,
+          dias_almacenamiento: orden.sucursales.empresa?.dias_almacenamiento,
         }
       } : null,
       empleado_recibe: orden.empleado_recibe ? {
@@ -682,7 +685,8 @@ export interface OrdenDetalle {
   numero_orden: string;
   estado: string;
   fecha_ingreso: string;
-  fecha_salida: string | null;
+  updated_at?: string;
+  fecha_salida?: string | null;
   cliente: {
     id: string;
     nombre_completo: string;
@@ -727,8 +731,8 @@ export interface OrdenDetalle {
       nombre: string;
       logo_url: string | null;
       telefono: string | null;
-      email: string | null;
       sitio_web: string | null;
+      dias_almacenamiento?: number;
     };
     whatsapp: string | null;
   };
@@ -755,6 +759,7 @@ export async function obtenerOrdenPorId(id: string) {
         numero_orden,
         estado,
         fecha_ingreso,
+        updated_at,
         fecha_salida,
         numero_serie,
         accesorios,
@@ -789,7 +794,8 @@ export async function obtenerOrdenPorId(id: string) {
             logo_url,
             telefono,
             email,
-            sitio_web
+            sitio_web,
+            dias_almacenamiento
           )
         ),
         empleado_recibe:empleados!ordenes_servicio_empleado_recibe_id_fkey(

@@ -76,21 +76,20 @@ export default function ActualizarOrdenModal({
     };
 
     const statusOptions = [
-        { value: 'PENDIENTE', label: 'Pendiente' },
-        { value: 'EN_REVISION', label: 'En Revisión' },
-        { value: 'EN_REPARACION', label: 'En Proceso' },
-        { value: 'REPARADO', label: 'Lista / Reparada' },
-        { value: 'ENTREGADO', label: 'Entregada' },
+        { value: 'PENDIENTES', label: 'Pendientes' },
+        { value: 'EN PROCESO', label: 'En Proceso' },
+        { value: 'LISTOS', label: 'Listos' },
+        { value: 'SIN SOLUCION', label: 'Sin Solución' },
+        { value: 'ENTREGADOS', label: 'Entregados' },
     ];
 
     const getEstadoBadgeClass = (estado: string) => {
         const classes = {
-            'PENDIENTE': 'bg-yellow-100 text-yellow-700',
-            'EN_REVISION': 'bg-blue-100 text-blue-700',
-            'EN_REPARACION': 'bg-orange-100 text-orange-700',
-            'REPARADO': 'bg-green-100 text-green-700',
-            'ENTREGADO': 'bg-gray-100 text-gray-600',
-            'CANCELADO': 'bg-red-100 text-red-700',
+            'PENDIENTES': 'bg-yellow-100 text-yellow-700',
+            'EN PROCESO': 'bg-blue-100 text-blue-700',
+            'LISTOS': 'bg-green-100 text-green-700',
+            'SIN SOLUCION': 'bg-rose-100 text-rose-700',
+            'ENTREGADOS': 'bg-indigo-100 text-indigo-700',
         };
         return classes[estado as keyof typeof classes] || 'bg-gray-100 text-gray-800';
     };

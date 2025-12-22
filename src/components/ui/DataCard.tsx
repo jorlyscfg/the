@@ -32,6 +32,8 @@ interface DataCardHeaderProps {
     title: string;
     subtitle?: string | React.ReactNode;
     subtitleClassName?: string;
+    titleClassName?: string;
+    alignActions?: 'start' | 'center';
     actions?: React.ReactNode;
     className?: string;
 }
@@ -41,11 +43,17 @@ export function DataCardHeader({
     title,
     subtitle,
     subtitleClassName,
+    titleClassName,
+    alignActions = 'center',
     actions,
     className
 }: DataCardHeaderProps) {
     return (
-        <div className={cn("px-3 py-1.5 flex items-center justify-between border-b border-gray-50 bg-gray-50/20", className)}>
+        <div className={cn(
+            "px-3 py-1.5 flex justify-between border-b border-gray-50 bg-gray-50/20",
+            alignActions === 'center' ? "items-center" : "items-start",
+            className
+        )}>
             <div className="flex items-center gap-3 min-w-0 flex-1">
                 {icon && (
                     <div className="h-10 w-10 bg-primary-100 rounded-lg flex items-center justify-center shrink-0 text-primary-600">
@@ -53,7 +61,7 @@ export function DataCardHeader({
                     </div>
                 )}
                 <div className="min-w-0 flex-1">
-                    <h3 className="text-sm font-bold text-gray-900 truncate leading-tight uppercase">
+                    <h3 className={cn("text-sm font-bold text-gray-900 truncate leading-tight uppercase", titleClassName)}>
                         {title}
                     </h3>
                     {subtitle && (
