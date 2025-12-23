@@ -129,8 +129,8 @@ export async function obtenerUserInfo() {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      // Retornar error silencioso sin loguear en consola de servidor
-      return { success: false, error: 'No autenticado' };
+      // Retornar error de sesión para que el llamante pueda redirigir
+      return { success: false, error: 'AUTH_SESSION_EXPIRED' };
     }
 
     console.log(`[Auth] Usuario autenticado: ${user.email} (${user.id})`);

@@ -538,7 +538,11 @@ export interface Orden {
 export async function obtenerOrdenes() {
   try {
     const userInfo = await obtenerUserInfo();
-    if (!userInfo.success || !userInfo.user?.sucursal?.id) {
+    if (!userInfo.success) {
+      return { success: false, error: userInfo.error };
+    }
+
+    if (!userInfo.user?.sucursal?.id) {
       throw new Error('No se pudo identificar la sucursal del usuario');
     }
 
@@ -745,7 +749,11 @@ export interface OrdenDetalle {
 export async function obtenerOrdenPorId(id: string) {
   try {
     const userInfo = await obtenerUserInfo();
-    if (!userInfo.success || !userInfo.user?.sucursal?.id) {
+    if (!userInfo.success) {
+      return { success: false, error: userInfo.error };
+    }
+
+    if (!userInfo.user?.sucursal?.id) {
       throw new Error('No se pudo identificar la sucursal del usuario');
     }
 

@@ -5,6 +5,7 @@ import { NotificationProvider } from "@/components/notifications/NotificationCon
 import NotificationContainer from "@/components/notifications/NotificationContainer";
 import ServiceWorkerRegistration from "@/components/pwa/ServiceWorkerRegistration";
 import FloatingQRButtonWrapper from "@/components/scanner/FloatingQRButtonWrapper";
+import SessionWatcher from "@/components/auth/SessionWatcher";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -45,6 +46,7 @@ export default function RootLayout({
     <html lang="es" suppressHydrationWarning>
       <body className={`${inter.variable} font-sans antialiased`} suppressHydrationWarning>
         <NotificationProvider>
+          <SessionWatcher />
           <ServiceWorkerRegistration />
           {children}
           <FloatingQRButtonWrapper />

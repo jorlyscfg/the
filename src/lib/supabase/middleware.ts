@@ -41,7 +41,30 @@ export async function updateSession(request: NextRequest) {
     )
 
     // This will refresh the session if needed
-    await supabase.auth.getUser()
+    const {
+        data: { user },
+    } = await supabase.auth.getUser()
+
+    // Lógica de redirección
+    const isLoginPage = request.nextUrl.pathname.startsWith('/login')
+    const isPublicRoute = request.nextUrl.pathname.startsWith('/consulta') ||
+        request.nextUrl.pathname.startsWith('/api/public')
+
+    if (!user && !isLoginPage && !isPublicRoute) {
+        // Redirigir al login si no hay usuario y no es una ruta pública
+        const url = request.nextUrl.clone()
+        url.pathname = '/login'
+        // Opcional: Guardar la URL actual para volver después del login
+        url.searchParams.set('next', request.nextUrl.pathname)
+        return NextResponse.redirect(url)
+    }
+
+    if (user && isLoginPage) {
+        // Redirigir al inicio si ya está logueado e intenta ir al login
+        const url = request.nextUrl.clone()
+        url.pathname = '/'
+        return NextResponse.redirect(url)
+    }
 
     return response
 }

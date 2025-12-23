@@ -3,11 +3,16 @@ import { obtenerOrdenes } from './actions';
 import OrdenesListClient from './OrdenesListClient';
 import { Button } from '@/components/ui/Button';
 import { X } from 'lucide-react';
+import { redirect } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
 export default async function OrdenesPage() {
   const result = await obtenerOrdenes();
+
+  if (!result.success && result.error === 'AUTH_SESSION_EXPIRED') {
+    redirect('/login');
+  }
 
   return (
     <div className="min-h-screen bg-gray-50/50">

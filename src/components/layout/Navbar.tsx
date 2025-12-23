@@ -21,6 +21,8 @@ import {
 } from 'lucide-react';
 import { useScrollLock } from '@/hooks/useScrollLock';
 import { obtenerUserInfo } from '@/app/actions';
+import ChangePasswordModal from '@/components/auth/ChangePasswordModal';
+import ProfileModal from '@/components/auth/ProfileModal';
 
 interface NavbarProps {
     title?: string;
@@ -45,6 +47,8 @@ export default function Navbar({
 }: NavbarProps) {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+    const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
+    const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [userInfo, setUserInfo] = useState<{
         nombre: string;
         email?: string | null;
@@ -184,12 +188,24 @@ export default function Navbar({
                                                 </p>
                                             </div>
 
-                                            <button className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                                            <button
+                                                onClick={() => {
+                                                    setIsProfileOpen(true);
+                                                    setIsUserMenuOpen(false);
+                                                }}
+                                                className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                                            >
                                                 <User className="w-4 h-4 text-gray-400" />
                                                 Mi Perfil
                                             </button>
 
-                                            <button className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                                            <button
+                                                onClick={() => {
+                                                    setIsChangePasswordOpen(true);
+                                                    setIsUserMenuOpen(false);
+                                                }}
+                                                className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                                            >
                                                 <Key className="w-4 h-4 text-gray-400" />
                                                 Cambiar Contraseña
                                             </button>
@@ -294,6 +310,17 @@ export default function Navbar({
                     </form>
                 </div>
             </aside>
+
+            <ChangePasswordModal
+                isOpen={isChangePasswordOpen}
+                onClose={() => setIsChangePasswordOpen(false)}
+            />
+
+            <ProfileModal
+                isOpen={isProfileOpen}
+                onClose={() => setIsProfileOpen(false)}
+                user={userInfo as any}
+            />
         </>
     );
 }

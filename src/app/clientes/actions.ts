@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
+import { obtenerUserInfo } from '@/app/actions';
 
 export interface Cliente {
   id: string;
@@ -15,6 +16,11 @@ export interface Cliente {
 
 export async function obtenerClientes() {
   try {
+    const userInfo = await obtenerUserInfo();
+    if (!userInfo.success) {
+      return { success: false, error: userInfo.error, clientes: [] };
+    }
+
     const supabase = await createClient();
 
     const { data: clientes, error } = await supabase

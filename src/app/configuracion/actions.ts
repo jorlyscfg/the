@@ -50,7 +50,11 @@ export interface Empleado {
 export async function obtenerConfiguracionCompleta() {
   try {
     const userInfo = await obtenerUserInfo();
-    if (!userInfo.success || !userInfo.user?.empresa?.id) {
+    if (!userInfo.success) {
+      return { success: false, error: userInfo.error };
+    }
+
+    if (!userInfo.user?.empresa?.id) {
       throw new Error('No se pudo identificar la empresa del usuario');
     }
     const empresaId = userInfo.user.empresa.id;

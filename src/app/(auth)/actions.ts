@@ -86,3 +86,40 @@ export async function logout() {
     revalidatePath('/', 'layout');
     redirect('/login');
 }
+
+export async function cambiarPassword(formData: FormData) {
+    const currentPassword = formData.get('currentPassword') as string;
+    const newPassword = formData.get('newPassword') as string;
+
+    if (!currentPassword || !newPassword) {
+        return { error: 'Ambas contraseñas son requeridas' };
+    }
+
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user || !user.email) {
+        return { error: 'Sesión no válida' };
+    }
+
+    // 1. Validar contraseña actual intentando hacer login de nuevo
+    const { error: authError } = await supabase.auth.signInWithPassword({
+        email: user.email,
+        password: currentPassword,
+    });
+
+    if (authError) {
+        return { error: 'La contraseña actual es incorrecta' };
+    }
+
+    // 2. Si es válida, actualizar a la nueva contraseña
+    const { error: updateError } = await supabase.auth.updateUser({
+        password: newPassword,
+    });
+
+    if (updateError) {
+        return { error: `Error al actualizar: ${updateError.message}` };
+    }
+
+    return { success: true };
+}
